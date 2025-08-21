@@ -25,7 +25,15 @@ const els = {
   profiles: document.getElementById("profiles"),
   extras: document.getElementById("extras"),
   downloadBtn: document.getElementById("downloadBtn"),
+  msg: document.getElementById("msg"),
+  installPill: document.getElementById("installPill"),
 };
+
+function info(t) { if (els.msg) els.msg.textContent = t; }
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+}
 
 function setProgress(n, total) {
   const pct = Math.min(100, Math.round((n / total) * 100));
@@ -45,15 +53,15 @@ function cleanNode(node) {
 async function ensureEngine() {
   if (state.engine) return state.engine;
   const modelId = els.model.value;
-  const msgEl = document.getElementById('msg');
-  msgEl.textContent = 'Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)';
+  info('Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)');
+
   const worker = new Worker('https://esm.run/@mlc-ai/web-llm/dist/worker.js', { type: 'module' });
   const engine = await CreateWebWorkerMLCEngine(worker, {
     model: modelId,
     initProgressCallback: (p) => {
       const t = p?.text || '';
       console.log(t);
-      if (msgEl) msgEl.textContent = 'Modelo: ' + t;
+      info('Modelo: ' + t);
     }
   });
   state.engine = engine;
@@ -85,8 +93,7 @@ async function llm(messages) {
     stream: false
   });
   } catch (err) {
-    const msgEl = document.getElementById('msg');
-    if (msgEl) msgEl.textContent = 'Erro ao gerar: ' + (err?.message || err);
+    info('Erro ao gerar: ' + (err?.message || err));
     console.error(err);
     throw err;
   }
@@ -153,7 +160,7 @@ function renderQuestion(q) {
 }
 
 function renderResult(res) {
-  document.getElementById("resultCard").classList.remove("hidden");
+  els.resultCard.classList.remove("hidden");
   els.summary.textContent = res.summary || "—";
   cleanNode(els.profiles);
   (res.profiles || []).slice(0,6).forEach(p => {
@@ -208,3 +215,49 @@ async function start() {
 }
 
 els.start.onclick = () => start();
+
+// WebGPU check
+window.addEventListener('load', () => {
+  if (!('gpu' in navigator)) {
+    info('Seu navegador não tem WebGPU habilitado. Use Chrome/Edge recentes no Android/desktop. No iOS, iOS 17+ é necessário e pode ser limitado.');
+    if (els.start) els.start.disabled = true;
+  }
+});
+
+// PWA install prompt
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  els.installPill.classList.remove('hidden');
+  els.installPill.onclick = async () => {
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') els.installPill.textContent = 'Instalado ✔';
+    } catch (err) {
+      console.error(err);
+    } finally {
+      deferredPrompt = null;
+    }
+  };
+});
+
+// iOS installation hint
+window.addEventListener('load', () => {
+  if (isIOS()) {
+    els.installPill.classList.remove('hidden');
+    els.installPill.textContent = 'Como instalar no iOS';
+    els.installPill.onclick = () => {
+      alert("No iOS, toque no botão Compartilhar do Safari e escolha 'Adicionar à Tela de Início'.");
+    };
+  }
+});
+
+// Service worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js')
+      .catch(err => console.error('SW failed:', err));
+  });
+}
