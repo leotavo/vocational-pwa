@@ -4,9 +4,7 @@ self.addEventListener('install', (e) => {
     './',
     './index.html',
     './main.js',
-    './manifest.webmanifest',
-    './icons/icon-192.png',
-    './icons/icon-512.png'
+    './manifest.webmanifest'
   ])));
 });
 self.addEventListener('activate', (e) => { self.clients.claim(); });

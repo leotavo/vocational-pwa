@@ -8,10 +8,9 @@ index.html
 main.js
 manifest.webmanifest
 service-worker.js
-icons/
-  ├─ icon-192.png
-  └─ icon-512.png
 ```
+
+Os ícones são incorporados como Data URIs; nenhum arquivo binário é necessário.
 
 ## Como rodar local
 ```bash
@@ -32,3 +31,4 @@ URL final: `https://SEU_USUARIO.github.io/vocational-pwa/`
 - WebGPU é necessário (Chrome/Edge modernos; iOS 17+ tem suporte limitado).
 - A primeira execução baixa o modelo (pode levar minutos e 2–4 GB). Depois roda offline (PWA).
 - Se uma atualização não aparecer, force reload (Ctrl+F5) ou troque o nome do cache no `service-worker.js`.
+
