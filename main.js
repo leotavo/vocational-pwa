@@ -54,6 +54,7 @@ async function ensureEngine() {
   if (state.engine) return state.engine;
   const modelId = els.model.value;
   info('Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)');
+
   const worker = new Worker('https://esm.run/@mlc-ai/web-llm/dist/worker.js', { type: 'module' });
   const engine = await CreateWebWorkerMLCEngine(worker, {
     model: modelId,
