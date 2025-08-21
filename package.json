@@ -1,0 +1,13 @@
+{
+  "name": "vocational-pwa",
+  "version": "1.0.0",
+  "description": "Roda 100% no dispositivo (navegador com WebGPU). Funciona offline após baixar o modelo.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"No tests specified\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
