@@ -55,9 +55,9 @@ async function ensureEngine() {
   const modelId = els.model.value;
   info('Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)');
   const urls = [
-    'https://esm.run/@mlc-ai/web-llm/dist/worker.js',
-    'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/dist/worker.js',
-    'https://unpkg.com/@mlc-ai/web-llm/dist/worker.js'
+    '/webllm.worker.js',
+    'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@0.2.79/dist/webllm.worker.js',
+    'https://unpkg.com/@mlc-ai/web-llm@0.2.79/dist/webllm.worker.js'
   ];
   let src = null;
   for (const url of urls) {
@@ -71,7 +71,7 @@ async function ensureEngine() {
       /* try next */
     }
   }
-  if (!src) throw new Error('worker.js não encontrado');
+  if (!src) throw new Error('webllm.worker.js não encontrado');
   const worker = new Worker(
     URL.createObjectURL(new Blob([src], { type: 'text/javascript' })),
     { type: 'module' }
