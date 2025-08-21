@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Teste Vocacional (PWA • On‑device)</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <style>
+    :root { --bg:#0b1220; --card:#111827; --muted:#94a3b8; --fg:#e5e7eb; --brand:#0ea5e9; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji"; background: var(--bg); color: var(--fg); }
+    header { padding: 16px 20px; display:flex; align-items:center; gap:12px; border-bottom:1px solid #1f2937; position:sticky; top:0; background:linear-gradient(180deg, rgba(11,18,32,.95), rgba(11,18,32,.7)); backdrop-filter: blur(6px); z-index:10;}
+    header h1 { font-size: 18px; margin: 0; letter-spacing:.2px; }
+    .container { max-width: 820px; margin: 0 auto; padding: 20px; }
+    .card { background:var(--card); border:1px solid #1f2937; border-radius:16px; padding:18px; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+    .row { display:flex; gap:16px; flex-wrap: wrap; }
+    .col { flex:1 1 280px; }
+    label { font-size: 12px; color: var(--muted); display:block; margin-bottom:6px; }
+    select, button, input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid #334155; background:#0b1324; color:#e5e7eb; }
+    button { background: linear-gradient(180deg, #22d3ee, #0ea5e9); color:#04121b; font-weight:700; border:none; cursor:pointer; }
+    button:disabled { opacity:.6; cursor:not-allowed; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .progress { height:10px; background:#0b1324; border-radius:999px; overflow:hidden; border:1px solid #334155; }
+    .progress > div { height:100%; background:linear-gradient(90deg, #22d3ee, #0ea5e9); width:0%; transition:width .3s; }
+    .pill { display:inline-flex; gap:10px; align-items:center; padding:8px 12px; border-radius:999px; border:1px solid #334155; background:#0b1324; font-size:12px; color:#cbd5e1; }
+    .options { display:grid; gap:10px; margin-top:12px; }
+    .opt { padding:12px 14px; border-radius:12px; border:1px solid #334155; background:#0b1324; cursor:pointer; }
+    .opt.selected { outline:2px solid #22d3ee; }
+    .bar { font-family: ui-monospace, Menlo, Consolas, monospace; }
+    .footer { opacity:.7; font-size:12px; padding: 10px 0; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/icon-192.png" alt="" width="24" height="24" />
+    <h1>🧭 Teste Vocacional (PWA • On‑device)</h1>
+    <span style="margin-left:auto" class="pill" id="installPill">Instalar</span>
+  </header>
+
+  <div class="container">
+    <div class="card" style="margin-bottom:16px">
+      <div class="row">
+        <div class="col">
+          <label>Modelo on‑device</label>
+          <select id="modelSelect">
+            <option value="Llama-3-8B-Instruct-q4f32_1-MLC">Llama 3 8B (q4f32_1)</option>
+            <option value="Qwen2.5-7B-Instruct-q4f32_1-MLC">Qwen 2.5 7B (q4f32_1)</option>
+            <option value="Mistral-7B-Instruct-v0.2-q4f32_1-MLC">Mistral 7B (q4f32_1)</option>
+          </select>
+          <p class="muted">Após a 1ª execução, o modelo fica em cache e o app funciona offline (PWA).</p>
+        </div>
+        <div class="col">
+          <label>Número‑alvo de perguntas</label>
+          <input id="qLimit" type="number" min="4" max="16" value="6" />
+          <p class="muted">Finaliza antes se confiança ≥ 0.85.</p>
+        </div>
+        <div class="col">
+          <label>Criatividade</label>
+          <input id="temperature" type="number" min="0" max="1" step="0.1" value="0.2" />
+          <p class="muted">0–0.3 deixa mais estável (JSON mais “certinho”).</p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <button id="startBtn">Iniciar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="progressCard" style="margin-bottom:16px; display:none">
+      <div class="progress"><div id="progressBar"></div></div>
+      <p class="muted" id="progressText">Progresso: 0/6</p>
+    </div>
+
+    <div class="card" id="qaCard" style="display:none">
+      <div id="questionWrap">
+        <h3 id="questionText">—</h3>
+        <div class="options" id="optionsWrap"></div>
+      </div>
+      <div style="display:flex; gap:12px; margin-top:12px">
+        <button id="nextBtn" disabled>Avançar ▶</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="resultCard">
+      <h3>🎯 Resultado</h3>
+      <p id="summary">—</p>
+      <div id="profiles"></div>
+      <div id="extras"></div>
+      <div style="margin-top:12px">
+        <button id="downloadBtn">Baixar JSON</button>
+      </div>
+    </div>
+
+    <p class="footer">Feito com WebLLM (MLC). Privacidade total: tudo roda no seu dispositivo.</p>
+  </div>
+
+  <script type="module" src="main.js"></script>
+  <script>
+    // PWA install
+    let deferredPrompt;
+    const pill = document.getElementById('installPill');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      pill.classList.remove('hidden');
+      pill.onclick = async () => {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') pill.textContent = "Instalado ✔";
+        deferredPrompt = null;
+      };
+    });
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  </script>
+</body>
+</html>
