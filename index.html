@@ -46,7 +46,7 @@
     <div class="card" style="margin-bottom:16px">
       <div class="row">
         <div class="col">
-          <label>Modelo on‑device</label>
+          <label for="modelSelect">Modelo on‑device</label>
           <select id="modelSelect">
             <option value="Llama-3-8B-Instruct-q4f32_1-MLC">Llama 3 8B (q4f32_1)</option>
             <option value="Qwen2.5-7B-Instruct-q4f32_1-MLC">Qwen 2.5 7B (q4f32_1)</option>
@@ -55,12 +55,12 @@
           <p class="muted">Após a 1ª execução, o modelo fica em cache e o app funciona offline (PWA).</p>
         </div>
         <div class="col">
-          <label>Número‑alvo de perguntas</label>
+          <label for="qLimit">Número‑alvo de perguntas</label>
           <input id="qLimit" type="number" min="4" max="16" value="6" />
           <p class="muted">Finaliza antes se confiança ≥ 0.85.</p>
         </div>
         <div class="col">
-          <label>Criatividade</label>
+          <label for="temperature">Criatividade</label>
           <input id="temperature" type="number" min="0" max="1" step="0.1" value="0.2" />
           <p class="muted">0–0.3 deixa mais estável (JSON mais “certinho”).</p>
         </div>
