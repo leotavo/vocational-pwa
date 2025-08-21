@@ -59,10 +59,16 @@ async function ensureEngine() {
   const src = await res.text();
   const worker = new Worker(
     URL.createObjectURL(new Blob([src], { type: 'text/javascript' })),
-    { type: 'module' }
+  { type: 'module' }
   );
-  const engine = await CreateWebWorkerMLCEngine(worker);
-  await engine.reload({ model: modelId });
+  const engine = await CreateWebWorkerMLCEngine(worker, {
+    model: modelId,
+    initProgressCallback: (p) => {
+      const t = p?.text || '';
+      console.log(t);
+      info('Modelo: ' + t);
+    }
+  });
   info('Modelo pronto');
   state.engine = engine;
   return engine;
