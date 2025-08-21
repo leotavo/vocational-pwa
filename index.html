@@ -38,10 +38,11 @@
   <header>
     <img src="icons/icon-192.png" alt="" width="24" height="24" />
     <h1>🧭 Teste Vocacional (PWA • On‑device)</h1>
-    <span style="margin-left:auto" class="pill" id="installPill">Instalar</span>
+    <span style="margin-left:auto" class="pill" id="installPill" class="hidden">Instalar</span>
   </header>
 
   <div class="container">
+    <div id="msg" class="muted" style="margin:10px 0;"></div>
     <div class="card" style="margin-bottom:16px">
       <div class="row">
         <div class="col">
@@ -118,6 +119,63 @@
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('service-worker.js');
+      });
+    }
+  
+  <script>
+    // Helpers
+    const $msg = document.getElementById('msg');
+    function info(t){ $msg.textContent = t; }
+    function isIOS(){
+      return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+             (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+    }
+
+    // WebGPU check
+    window.addEventListener('load', () => {
+      if (!('gpu' in navigator)) {
+        info('Seu navegador não tem WebGPU habilitado. Use Chrome/Edge recentes no Android/desktop. No iOS, iOS 17+ é necessário e pode ser limitado.');
+        const startBtn = document.getElementById('startBtn');
+        if (startBtn){ startBtn.disabled = true; }
+      }
+    });
+
+    // PWA install
+    let deferredPrompt;
+    const pill = document.getElementById('installPill');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      pill.classList.remove('hidden');
+      pill.onclick = async () => {
+        try {
+          deferredPrompt.prompt();
+          const { outcome } = await deferredPrompt.userChoice;
+          if (outcome === 'accepted') pill.textContent = "Instalado ✔";
+        } catch(err){
+          console.error(err);
+        } finally {
+          deferredPrompt = null;
+        }
+      };
+    });
+
+    // iOS: não dispara beforeinstallprompt; mostrar instrução
+    window.addEventListener('load', () => {
+      if (isIOS()) {
+        pill.classList.remove('hidden');
+        pill.textContent = "Como instalar no iOS";
+        pill.onclick = () => {
+          alert("No iOS, toque no botão Compartilhar do Safari e escolha 'Adicionar à Tela de Início'.");
+        };
+      }
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .catch(err => console.error('SW failed:', err));
       });
     }
   </script>

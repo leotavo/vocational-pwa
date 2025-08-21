@@ -45,8 +45,10 @@ function cleanNode(node) {
 async function ensureEngine() {
   if (state.engine) return state.engine;
   const modelId = els.model.value;
+  const msgEl = document.getElementById('msg');
+  msgEl.textContent = 'Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)';
   const engine = await CreateWebWorkerMLCEngine(modelId, {
-    initProgressCallback: (p) => { console.log(p?.text || p); }
+    initProgressCallback: (p) => { const t=(p?.text||''); console.log(t); if(msgEl) msgEl.textContent = 'Modelo: ' + t; }
   });
   state.engine = engine;
   return engine;
@@ -69,11 +71,19 @@ Formato ao final:
 
 async function llm(messages) {
   const engine = await ensureEngine();
-  const out = await engine.chat.completions.create({
+  let out;
+  try {
+    out = await engine.chat.completions.create({
     messages,
     temperature: Number(state.temperature),
     stream: false
   });
+  } catch (err) {
+    const msgEl = document.getElementById('msg');
+    if (msgEl) msgEl.textContent = 'Erro ao gerar: ' + (err?.message || err);
+    console.error(err);
+    throw err;
+  }
   return out.choices[0].message.content;
 }
 

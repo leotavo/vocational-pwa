@@ -1,6 +1,6 @@
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open('vocacional-v1').then(cache => cache.addAll([
+  e.waitUntil(caches.open('vocacional-v2').then(cache => cache.addAll([
     './',
     './index.html',
     './main.js',
