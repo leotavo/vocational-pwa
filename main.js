@@ -54,12 +54,24 @@ async function ensureEngine() {
   if (state.engine) return state.engine;
   const modelId = els.model.value;
   info('Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)');
-  let res = await fetch('https://esm.run/@mlc-ai/web-llm/dist/worker.js');
-  if (!res.ok) {
-    res = await fetch('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm@latest/dist/worker.js');
+  const urls = [
+    'https://esm.run/@mlc-ai/web-llm/dist/worker.js',
+    'https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/dist/worker.js',
+    'https://unpkg.com/@mlc-ai/web-llm/dist/worker.js'
+  ];
+  let src = null;
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        src = await res.text();
+        break;
+      }
+    } catch {
+      /* try next */
+    }
   }
-  if (!res.ok) throw new Error('worker.js não encontrado');
-  const src = await res.text();
+  if (!src) throw new Error('worker.js não encontrado');
   const worker = new Worker(
     URL.createObjectURL(new Blob([src], { type: 'text/javascript' })),
     { type: 'module' }
