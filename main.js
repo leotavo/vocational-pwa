@@ -47,8 +47,14 @@ async function ensureEngine() {
   const modelId = els.model.value;
   const msgEl = document.getElementById('msg');
   msgEl.textContent = 'Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)';
-  const engine = await CreateWebWorkerMLCEngine(modelId, {
-    initProgressCallback: (p) => { const t=(p?.text||''); console.log(t); if(msgEl) msgEl.textContent = 'Modelo: ' + t; }
+  const worker = new Worker('https://esm.run/@mlc-ai/web-llm/dist/worker.js', { type: 'module' });
+  const engine = await CreateWebWorkerMLCEngine(worker, {
+    model: modelId,
+    initProgressCallback: (p) => {
+      const t = p?.text || '';
+      console.log(t);
+      if (msgEl) msgEl.textContent = 'Modelo: ' + t;
+    }
   });
   state.engine = engine;
   return engine;

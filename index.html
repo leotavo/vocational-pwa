@@ -102,27 +102,6 @@
 
   <script type="module" src="main.js"></script>
   <script>
-    // PWA install
-    let deferredPrompt;
-    const pill = document.getElementById('installPill');
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      pill.classList.remove('hidden');
-      pill.onclick = async () => {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') pill.textContent = "Instalado ✔";
-        deferredPrompt = null;
-      };
-    });
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('service-worker.js');
-      });
-    }
-  
-  <script>
     // Helpers
     const $msg = document.getElementById('msg');
     function info(t){ $msg.textContent = t; }
