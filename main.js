@@ -54,10 +54,13 @@ async function ensureEngine() {
   if (state.engine) return state.engine;
   const modelId = els.model.value;
   info('Baixando/Inicializando modelo… (pode levar alguns minutos na primeira vez)');
-  const res = await fetch('https://esm.run/@mlc-ai/web-llm/dist/worker.js');
-  const blob = await res.blob();
-  const workerUrl = URL.createObjectURL(blob);
-  const worker = new Worker(workerUrl, { type: 'module' });
+  const res = await fetch('https://cdn.jsdelivr.net/npm/@mlc-ai/web-llm/dist/worker.js');
+  if (!res.ok) throw new Error('worker.js não encontrado');
+  const src = await res.text();
+  const worker = new Worker(
+    URL.createObjectURL(new Blob([src], { type: 'text/javascript' })),
+  { type: 'module' }
+  );
   const engine = await CreateWebWorkerMLCEngine(worker, {
     model: modelId,
     initProgressCallback: (p) => {
@@ -66,6 +69,7 @@ async function ensureEngine() {
       info('Modelo: ' + t);
     }
   });
+  info('Modelo pronto');
   state.engine = engine;
   return engine;
 }
